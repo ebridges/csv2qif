@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "csv2qif"
-version = "0.1.0"
+version = "0.1.1"
 description = "Convert CSV file to QIF format."
 authors = ["Edward Bridges"]
 license = "MIT"
