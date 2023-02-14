@@ -1,13 +1,13 @@
 [tool.poetry]
 name = "csv2qif"
-version = "0.1.1"
+version = "0.1.2"
 description = "Convert CSV file to QIF format."
 authors = ["Edward Bridges"]
 license = "MIT"
 readme = "README.md"
 repository = "https://github.com/ebridges/csv2qif"
 classifiers = [
-    "Development Status :: 5 - Production/Stable",
+    "Development Status :: Development Status :: 2 - Pre-Alpha",
     "Intended Audience :: End Users/Desktop",
     "Intended Audience :: Financial and Insurance Industry",
     "Topic :: Home Automation",
