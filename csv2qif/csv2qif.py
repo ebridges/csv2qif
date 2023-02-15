@@ -19,14 +19,14 @@ Options:
   --ignore-pending          Ignore pending transactions.
   --verbose                 Verbose logging output.
 """
+import csv
 from datetime import datetime
 from logging import debug, info, INFO, DEBUG, basicConfig
-from sys import stdout, stdin
-from tomllib import load
-import csv
+from sys import stdout, exit
 from docopt import docopt
 
-import transaction_writer
+from csv2qif import __version__
+from csv2qif import transaction_writer
 
 
 def get_data(input):
@@ -40,7 +40,8 @@ def get_data(input):
           'end': sortedlist[len(sortedlist)-1][1],
         }
     except csv.Error as e:
-        sys.exit('file {}, line {}: {}'.format(input, reader.line_num, e))
+        exit('file {}, line {}: {}'.format(input, reader.line_num, e))
+
 
 def output_filename(account_path, fromto, file_ext):
   account = account_path.split(':')[-1]
@@ -63,6 +64,7 @@ def format_txn(t):
     'amount': t[3],
     'check_number': t[6],
   }
+
 
 def convert(account, input, output):
     data, fromto = get_data(input)
@@ -101,10 +103,7 @@ def configure_logging(level):
 
 
 def main():
-  with open("pyproject.toml", "rb") as f:
-    data = load(f)
-    version = data['tool']['poetry']['version']
-  args = docopt(__doc__, version=version)
+  args = docopt(__doc__, version=__version__)
   configure_logging(args['--verbose'])
   debug(args)
   
