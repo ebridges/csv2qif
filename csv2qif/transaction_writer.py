@@ -1,4 +1,3 @@
-from dateutil.parser import parse
 from decimal import Decimal
 from logging import info
 from json import dumps
