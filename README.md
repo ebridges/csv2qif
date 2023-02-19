@@ -28,15 +28,9 @@ options:
 ## Development
 
 1. It is recommended to use `pyenv` to ensure correct python version is in use.  Cf.: `.python-version`
-
-2. Set up virtualenv.
-        $ python -m venv venv
-
-3. Activate virtualenv.
-        $ source ./venv/bin/activate
-
-4. Update pip.
-        $ pip install --upgrade pip
+2. Set up virtualenv: `python -m venv venv`
+3. Activate virtualenv: `source ./venv/bin/activate`
+4. Update pip: `pip install --upgrade pip`
 
 ## License
 
