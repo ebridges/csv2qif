@@ -5,30 +5,31 @@ from datetime import datetime, date
 
 TWOPLACES = Decimal(10) ** -2
 
+
 class TransactionWriter(object):
-  def __init__(self, output):
-    if output:
-      self.output = output
+    def __init__(self, output):
+        if output:
+            self.output = output
 
-  def instance(t, output):
-    if t == 'qif':
-      return QifTransactionWriter(output)
-    if t == 'json':
-      return JsonTransactionWriter(output)
+    def instance(t, output):
+        if t == "qif":
+            return QifTransactionWriter(output)
+        if t == "json":
+            return JsonTransactionWriter(output)
 
-  instance = staticmethod(instance)
+    instance = staticmethod(instance)
 
-  def begin(self, account_info):
-    pass
+    def begin(self, account_info):
+        pass
 
-  def write_record(self, transaction):
-    pass
+    def write_record(self, transaction):
+        pass
 
-  def end(self):
-    pass
+    def end(self):
+        pass
 
 
-'''
+"""
 {
   "accounts": [
     {
@@ -95,48 +96,50 @@ class TransactionWriter(object):
     }
   ]
 }
-'''
+"""
+
 
 class JsonTransactionWriter(TransactionWriter):
-  '''
-  Format:
-  https://plaid.com/docs/api/products/transactions/#transactionsget
-  '''
-  def begin(self, account_info):
-    print( dumps(account_info, sort_keys=True), file=self.output)
+    """
+    Format:
+    https://plaid.com/docs/api/products/transactions/#transactionsget
+    """
 
-  def write_record(self, transaction):
-    def encode_date(obj):
-        if isinstance(obj, (date, datetime)):
-            return obj.isoformat()
-    print( dumps(transaction.to_dict(), sort_keys=True, default=encode_date), file=self.output)
+    def begin(self, account_info):
+        print(dumps(account_info, sort_keys=True), file=self.output)
+
+    def write_record(self, transaction):
+        def encode_date(obj):
+            if isinstance(obj, (date, datetime)):
+                return obj.isoformat()
+
+        record = dumps(transaction.to_dict(), sort_keys=True, default=encode_date)
+        print(record, file=self.output)
 
 
 class QifTransactionWriter(TransactionWriter):
-  def begin(self, account):
-    print('!Account', file=self.output)
-    print('N%s' % account['name'], file=self.output)
-    print('T%s' % account['type'], file=self.output)
-    if 'description' in account:
-      print('D%s' % account['description'], file=self.output)
-    print('^', file=self.output)
-    print('!Type:%s' % account['type'], file=self.output)
+    def begin(self, account, account_type, description=None):
+        print("!Account", file=self.output)
+        print("N%s" % account, file=self.output)
+        print("T%s" % account_type, file=self.output)
+        if description:
+            print("D%s" % description, file=self.output)
+        print("^", file=self.output)
+        print("!Type:%s" % account_type, file=self.output)
 
+    def write_record(self, transaction):
+        # cleared status: Values are blank (not cleared), "*" or "c" (cleared) and "X" or "R" (reconciled).
+        print("C", file=self.output)
+        print("D%s" % transaction["date"], file=self.output)
+        print("N%s" % self.format_chknum(transaction), file=self.output)
+        print("P%s" % transaction["name"], file=self.output)
+        print("T%s" % self.format_amount(transaction["amount"]), file=self.output)
+        print("^", file=self.output)
 
-  def write_record(self, transaction):
-    print('C', file=self.output) # cleared status: Values are blank (not cleared), "*" or "c" (cleared) and "X" or "R" (reconciled).
-    print('D%s' % transaction['date'], file=self.output)
-    print('N%s' % self.format_chknum(transaction), file=self.output)
-    print('P%s' % transaction['name'], file=self.output)
-    print('T%s' % self.format_amount(transaction['amount']), file=self.output)
-    print('^', file=self.output)
+    def format_chknum(self, t):
+        return t["check_number"] if (t["check_number"]) else "N/A"
 
-
-  def format_chknum(self, t):
-    return t['check_number'] if(t['check_number']) else 'N/A'
-
-
-  def format_amount(self,a):
-    d = Decimal(a).quantize(TWOPLACES).copy_negate()
-    info("formatted amount [%s] as [%s]" % (a, str(d)))
-    return d
+    def format_amount(self, a):
+        d = Decimal(a).quantize(TWOPLACES).copy_negate()
+        info("formatted amount [%s] as [%s]" % (a, str(d)))
+        return d
