@@ -3,14 +3,14 @@ import csv
 from json import loads
 from datetime import datetime
 from logging import debug, info, INFO, DEBUG, basicConfig
-from sys import stdout, exit
+from sys import stdin, stdout, exit
 
 from csv2qif import __version__, __doc__
 from csv2qif import transaction_writer
 
 
 def get_data(input):
-    with open(input, newline="") as csvfile:
+    with get_inputhandle(input) as csvfile:
         try:
             reader = csv.reader(csvfile)
             next(reader, None)  # skip the headers
@@ -31,6 +31,11 @@ def output_filename(account_path, fromto, file_ext):
     t = datetime.strftime(fromto["end"], "%Y-%m-%d")
     return "%s--%s-%s.%s" % (f, t, account, file_ext)
 
+def get_inputhandle(input):
+    if input == 'stdin' or input == '-':
+        return stdin
+    else:
+        return open(input, newline="")
 
 def get_outputhandle(account_name, output_dir, output_format, fromto):
     output_to_file = True if output_dir else False
@@ -116,9 +121,9 @@ def main():
     )
     parser.add_argument("-a", "--account", required=True)
     parser.add_argument("-t", "--account-type", required=True)
-    parser.add_argument("-i", "--input-file", required=True)
+    parser.add_argument("-i", "--input-file", default="stdin")
     parser.add_argument(
-        "-o", "--output-dir", help="Location to write output file", default="."
+        "-o", "--output-dir", help="Directory to write output", default="."
     )
     parser.add_argument(
         "-f",
