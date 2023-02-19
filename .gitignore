@@ -4,3 +4,4 @@ dist/
 *.sublime-workspace
 **/__pycache__
 .vscode/
+venv/
