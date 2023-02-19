@@ -5,8 +5,8 @@ from datetime import datetime
 from logging import debug, info, INFO, DEBUG, basicConfig
 from sys import stdout, exit
 
-from __init__ import __version__, __doc__
-import transaction_writer
+from csv2qif import __version__, __doc__
+from csv2qif import transaction_writer
 
 
 def get_data(input):
