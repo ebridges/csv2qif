@@ -133,7 +133,8 @@ def do_convert(account, type, input, output, format, col_spec, backup_input):
                 output_handle.close()
 
         if backup_input:
-            csv_file = output_filename(account, fromto, 'csv')
+            filename = output_filename(account, fromto, 'csv')
+            csv_file = '%s/%s' % (output, filename)
             with open(csv_file, 'w', newline='') as csv_handle:
                 csv_writer = csv.writer(csv_handle, dialect='excel')
                 csv_writer.writerows(data)
