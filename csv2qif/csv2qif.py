@@ -2,25 +2,35 @@ from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 import csv
 from json import loads
 from datetime import datetime
-from logging import debug, info, INFO, DEBUG, basicConfig
+from logging import debug, info, warn, INFO, DEBUG, basicConfig
 from sys import stdin, stdout, exit
 
 from csv2qif import __version__, __doc__
 from csv2qif import transaction_writer
 
 
-def get_data(input):
+QIF_DATE_FORMAT = "%m/%d/%Y"
+PAYEE_FIELD = "name"
+DATE_FIELD = "date"
+AMOUNT_FIELD = "amount"
+REQUIRED_FIELDS = [DATE_FIELD, PAYEE_FIELD, AMOUNT_FIELD]
+
+def get_data(input, date_idx):
     with get_inputhandle(input) as csvfile:
         try:
             reader = csv.reader(csvfile)
             next(reader, None)  # skip the headers
-            sorter = lambda row: datetime.strptime(row[1], "%m/%d/%Y").date()
+            sorter = lambda row: datetime.strptime(row[date_idx], QIF_DATE_FORMAT).date()
             sortedlist = sorted(reader, key=sorter)
-            end_idx = len(sortedlist) - 1
-            return sortedlist, {
-                "start": datetime.strptime(sortedlist[0][1], "%m/%d/%Y").date(),
-                "end": datetime.strptime(sortedlist[end_idx][1], "%m/%d/%Y").date(),
-            }
+            if len(sortedlist) > 0:
+                start_idx = 0
+                end_idx = len(sortedlist) - 1
+                return sortedlist, {
+                    "start": datetime.strptime(sortedlist[start_idx][date_idx], QIF_DATE_FORMAT).date(),
+                    "end": datetime.strptime(sortedlist[end_idx][date_idx], QIF_DATE_FORMAT).date(),
+                }
+            else:
+                return list(), {"start": None, "end": None}
         except csv.Error as e:
             exit("file {}, line {}: {}".format(input, reader.line_num, e))
 
@@ -50,13 +60,18 @@ def get_outputhandle(account_name, output_dir, output_format, fromto):
 def format_txn(t, col_spec):
     """
     Details,Posting Date,Description,Amount,Type,Balance,Check or Slip #
+    Transaction Date,Post Date,Description,Category,Type,Amount,Memo
     """
-    return {
-        "date": t[col_spec["date"]],
-        "name": t[col_spec["name"]],
-        "amount": t[col_spec["amount"]],
-        "check_number": t[col_spec["check_number"]],
-    }
+
+    for f in REQUIRED_FIELDS:
+        if f not in col_spec:
+            raise ValueError(f"Required field {f} missing from col spec.")
+
+    txn = {}
+    for k, v in col_spec.items():
+        txn[k] = t[v]
+
+    return txn
 
 
 def convert(args):
@@ -71,31 +86,34 @@ def convert(args):
 
 
 def do_convert(account, account_type, input_file, output_dir, output_format, col_spec):
-    data, fromto = get_data(input_file)
-    output_handle = get_outputhandle(account, output_dir, output_format, fromto)
+    data, fromto = get_data(input_file, col_spec[DATE_FIELD])
+    if len(data) > 0:
+        output_handle = get_outputhandle(account, output_dir, output_format, fromto)
 
-    try:
-        w = transaction_writer.TransactionWriter.instance(output_format, output_handle)
-        w.begin(account, account_type)
+        try:
+            w = transaction_writer.TransactionWriter.instance(output_format, output_handle)
+            w.begin(account, account_type)
 
-        txn_cnt = 1
-        txn_total = len(data)
-        debug("converting txn: %d of total: %d" % (txn_cnt, txn_total))
-        for t in data:
-            transaction = format_txn(t, col_spec)
-            info(
-                "writing record for [%s: %s]"
-                % (transaction["date"], transaction["name"])
-            )
-            debug("%s" % transaction)
-            w.write_record(transaction)
-            txn_cnt = txn_cnt + 1
+            txn_cnt = 1
+            txn_total = len(data)
+            debug("converting txn: %d of total: %d" % (txn_cnt, txn_total))
+            for t in data:
+                transaction = format_txn(t, col_spec)
+                info(
+                    "writing record for [%s: %s]"
+                    % (transaction[DATE_FIELD], transaction[PAYEE_FIELD])
+                )
+                debug("%s" % transaction)
+                w.write_record(transaction)
+                txn_cnt = txn_cnt + 1
 
-        w.end()
+            w.end()
 
-    finally:
-        if output_handle is not stdout:
-            output_handle.close()
+        finally:
+            if output_handle is not stdout:
+                output_handle.close()
+    else:
+        warn(f'No records found for account {account}')
 
 
 def configure_logging(level):
