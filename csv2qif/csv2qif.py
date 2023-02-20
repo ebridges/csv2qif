@@ -16,19 +16,26 @@ DATE_FIELD = "date"
 AMOUNT_FIELD = "amount"
 REQUIRED_FIELDS = [DATE_FIELD, PAYEE_FIELD, AMOUNT_FIELD]
 
+
 def get_data(input, date_idx):
     with get_inputhandle(input) as csvfile:
         try:
             reader = csv.reader(csvfile)
             next(reader, None)  # skip the headers
-            sorter = lambda row: datetime.strptime(row[date_idx], QIF_DATE_FORMAT).date()
+            sorter = lambda row: datetime.strptime(
+                row[date_idx], QIF_DATE_FORMAT
+            ).date()
             sortedlist = sorted(reader, key=sorter)
             if len(sortedlist) > 0:
                 start_idx = 0
                 end_idx = len(sortedlist) - 1
                 return sortedlist, {
-                    "start": datetime.strptime(sortedlist[start_idx][date_idx], QIF_DATE_FORMAT).date(),
-                    "end": datetime.strptime(sortedlist[end_idx][date_idx], QIF_DATE_FORMAT).date(),
+                    "start": datetime.strptime(
+                        sortedlist[start_idx][date_idx], QIF_DATE_FORMAT
+                    ).date(),
+                    "end": datetime.strptime(
+                        sortedlist[end_idx][date_idx], QIF_DATE_FORMAT
+                    ).date(),
                 }
             else:
                 return list(), {"start": None, "end": None}
@@ -37,12 +44,12 @@ def get_data(input, date_idx):
 
 
 def output_filename(account_path, fromto, file_ext):
-    '''
+    """
     `account_path` represents the full hierarchical name of the account in GnuCash.
     Examples:
         "Assets:Checking Accounts:Joint Checking"
         "Liabilities:Credit Cards:Mastercard"
-    '''
+    """
     account = account_path.split(":")[-1]
     f = datetime.strftime(fromto["start"], "%Y-%m-%d")
     t = datetime.strftime(fromto["end"], "%Y-%m-%d")
@@ -50,14 +57,14 @@ def output_filename(account_path, fromto, file_ext):
 
 
 def get_inputhandle(input):
-    if input == 'stdin' or input == '-':
+    if input == "stdin" or input == "-":
         return stdin
     else:
         return open(input, newline="")
 
 
 def get_outputhandle(account_name, output_dir, output_format, fromto):
-    if output_dir in ['-', 'stdout']:
+    if output_dir in ["-", "stdout"]:
         return stdout
 
     filename = output_filename(account_name, fromto, output_format)
@@ -93,17 +100,18 @@ def convert(args):
         args.output_dir,
         args.output_format,
         loads(args.col_spec),
+        args.backup_input,
     )
 
 
-    data, fromto = get_data(input_file, col_spec[DATE_FIELD])
 def do_convert(account, type, input, output, format, col_spec, backup_input):
+    data, fromto = get_data(input, col_spec[DATE_FIELD])
     if len(data) > 0:
-        output_handle = get_outputhandle(account, output_dir, output_format, fromto)
+        output_handle = get_outputhandle(account, output, format, fromto)
 
         try:
-            w = transaction_writer.TransactionWriter.instance(output_format, output_handle)
-            w.begin(account, account_type)
+            w = transaction_writer.TransactionWriter.instance(format, output_handle)
+            w.begin(account, type)
 
             txn_cnt = 1
             txn_total = len(data)
@@ -131,7 +139,7 @@ def do_convert(account, type, input, output, format, col_spec, backup_input):
                 csv_writer.writerows(data)
 
     else:
-        warn(f'No records found for account {account}')
+        warn(f"No records found for account {account}")
 
 
 def configure_logging(level):
@@ -158,9 +166,24 @@ def main():
     parser.add_argument(
         "-v", "--version", action="version", version=f"%(prog)s {__version__}"
     )
-    parser.add_argument("-a", "--account", required=True)
-    parser.add_argument("-t", "--account-type", required=True)
-    parser.add_argument("-i", "--input-file", default="stdin")
+    parser.add_argument(
+        "-a",
+        "--account",
+        help="The full hierarchical name of the account in GnuCash.",
+        required=True,
+    )
+    parser.add_argument(
+        "-t",
+        "--account-type",
+        help="One of 'Bank', 'Cash', 'CCard', or 'Invst'",
+        required=True,
+    )
+    parser.add_argument(
+        "-i",
+        "--input-file",
+        help="Input file in CSV format; define location of required fields using 'col-spec'",
+        default="stdin",
+    )
     parser.add_argument(
         "-o", "--output-dir", help="Directory to write output", default="stdout"
     )
