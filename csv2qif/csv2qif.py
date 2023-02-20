@@ -37,11 +37,14 @@ def get_inputhandle(input):
     else:
         return open(input, newline="")
 
+
 def get_outputhandle(account_name, output_dir, output_format, fromto):
-    output_to_file = True if output_dir else False
+    if output_dir in ['-', 'stdout']:
+        return stdout
+
     filename = output_filename(account_name, fromto, output_format)
     output_file = "%s/%s" % (output_dir, filename)
-    return output_to_file and open(output_file, "w") or stdout
+    return open(output_file, "w")
 
 
 def format_txn(t, col_spec):
@@ -123,7 +126,7 @@ def main():
     parser.add_argument("-t", "--account-type", required=True)
     parser.add_argument("-i", "--input-file", default="stdin")
     parser.add_argument(
-        "-o", "--output-dir", help="Directory to write output", default="."
+        "-o", "--output-dir", help="Directory to write output", default="stdout"
     )
     parser.add_argument(
         "-f",
