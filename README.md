@@ -5,7 +5,8 @@
 ```
 CSV to QIF
 
-usage: csv2qif [-h] [--verbose] [-v] -a ACCOUNT -t ACCOUNT_TYPE -i INPUT_FILE [-o OUTPUT_DIR] [-f OUTPUT_FORMAT] [-c COL_SPEC]
+usage: csv2qif [-h] [--verbose] [-v] -a ACCOUNT -t ACCOUNT_TYPE 
+               [-i INPUT_FILE] [-o OUTPUT_DIR] [-f OUTPUT_FORMAT] [-c COL_SPEC] [-b BACKUP_INPUT]
 
 Convert financial transactions in CSV format to QIF files.
 
@@ -14,15 +15,28 @@ options:
   --verbose
   -v, --version         show program's version number and exit
   -a ACCOUNT, --account ACCOUNT
+                        The full hierarchical name of the account in GnuCash.
+                        (default: None)
   -t ACCOUNT_TYPE, --account-type ACCOUNT_TYPE
+                        One of "Bank", "Cash", "CCard", or "Invst"
+                        (default: None)
   -i INPUT_FILE, --input-file INPUT_FILE
+                        Input file in CSV format; define location of required fields using "col-spec"
+                        (default: stdin)
   -o OUTPUT_DIR, --output-dir OUTPUT_DIR
-                        Location to write output file (default: .)
+                        Directory to write output
+                        (default: stdout)
   -f OUTPUT_FORMAT, --output-format OUTPUT_FORMAT
-                        Format of output, either "qif" or "json" (default: qif)
+                        Format of output, either "qif" or "json"
+                        (default: qif)
   -c COL_SPEC, --col-spec COL_SPEC
                         Specify column of required fields (date, name, amount, check_number)
                         (default: {"date": 1, "name": 2, "amount": 3, "check_number": 6})
+  -b BACKUP_INPUT, --backup-input BACKUP_INPUT
+                        Save a copy of input CSV alongside the QIF file, with same filename.
+                        (default: None)
+
+MIT License: ©2023 Edward Q. Bridges
 ```
 
 ## Development
