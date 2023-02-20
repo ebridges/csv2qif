@@ -82,6 +82,9 @@ def format_txn(t, col_spec):
 
 
 def convert(args):
+    if args.output_format == "json":
+        raise NotImplementedError("json support currently not implemented.")
+
     do_convert(
         args.account,
         args.account_type,
