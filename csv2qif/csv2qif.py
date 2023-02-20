@@ -36,10 +36,17 @@ def get_data(input, date_idx):
 
 
 def output_filename(account_path, fromto, file_ext):
+    '''
+    `account_path` represents the full hierarchical name of the account in GnuCash.
+    Examples:
+        "Assets:Checking Accounts:Joint Checking"
+        "Liabilities:Credit Cards:Mastercard"
+    '''
     account = account_path.split(":")[-1]
     f = datetime.strftime(fromto["start"], "%Y-%m-%d")
     t = datetime.strftime(fromto["end"], "%Y-%m-%d")
     return "%s--%s-%s.%s" % (f, t, account, file_ext)
+
 
 def get_inputhandle(input):
     if input == 'stdin' or input == '-':
