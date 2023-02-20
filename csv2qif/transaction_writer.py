@@ -137,7 +137,7 @@ class QifTransactionWriter(TransactionWriter):
         print("^", file=self.output)
 
     def format_chknum(self, t):
-        return t["check_number"] if (t["check_number"]) else "N/A"
+        return t["check_number"] if ("check_number" in t and t["check_number"]) else "N/A"
 
     def format_amount(self, a):
         d = Decimal(a).quantize(TWOPLACES).copy_negate()
