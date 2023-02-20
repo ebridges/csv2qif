@@ -34,10 +34,11 @@ options:
 
 ## Release process
 
-1. Commit/push all final code.
-2. Increment version in `csv2qif/__init__.py` and commit/push.
-3. Tag release in format `x.y.z`, using same version string as in `csv2qif/__init__.py`. Push tag to remote.
-4. [Publish a new release version](https://github.com/ebridges/csv2qif/releases/new); doing so will trigger an upload to PyPI.
+1. Format code using: `black .`
+2. Commit/push all final code.
+3. Increment version in `csv2qif/__init__.py` and commit/push.
+4. Tag release in format `x.y.z`, using same version string as in `csv2qif/__init__.py`. Push tag to remote.
+5. [Publish a new release version](https://github.com/ebridges/csv2qif/releases/new); doing so will trigger an upload to PyPI.
 
 ## License
 
