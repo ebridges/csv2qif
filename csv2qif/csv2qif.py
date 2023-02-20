@@ -4,6 +4,7 @@ from json import loads
 from datetime import datetime
 from logging import debug, info, warn, INFO, DEBUG, basicConfig
 from sys import stdin, stdout, exit
+from distutils.util import strtobool
 
 from csv2qif import __version__, __doc__
 from csv2qif import transaction_writer
@@ -95,8 +96,8 @@ def convert(args):
     )
 
 
-def do_convert(account, account_type, input_file, output_dir, output_format, col_spec):
     data, fromto = get_data(input_file, col_spec[DATE_FIELD])
+def do_convert(account, type, input, output, format, col_spec, backup_input):
     if len(data) > 0:
         output_handle = get_outputhandle(account, output_dir, output_format, fromto)
 
@@ -122,6 +123,13 @@ def do_convert(account, account_type, input_file, output_dir, output_format, col
         finally:
             if output_handle is not stdout:
                 output_handle.close()
+
+        if backup_input:
+            csv_file = output_filename(account, fromto, "csv")
+            with open(csv_file, "w", newline="") as csv_handle:
+                csv_writer = csv.writer(csv_handle, dialect="excel")
+                csv_writer.writerows(data)
+
     else:
         warn(f'No records found for account {account}')
 
@@ -167,6 +175,12 @@ def main():
         "--col-spec",
         help="Specify column of required fields (date, name, amount, check_number)",
         default='{"date": 1, "name": 2, "amount": 3, "check_number": 6}',
+    )
+    parser.add_argument(
+        "-b",
+        "--backup-input",
+        help="Save a copy of input CSV alongside the QIF file, with same filename.",
+        type=lambda x: bool(strtobool(x)),
     )
 
     args = parser.parse_args()
