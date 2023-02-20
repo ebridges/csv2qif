@@ -29,6 +29,11 @@ csv2qif = 'csv2qif.csv2qif:main'
 readme = {file = ["README.md"], content-type = "text/markdown"}
 version = {attr = "csv2qif.__version__"}
 
+[tool.black]
+line-length = 88
+target-version = ['py311']
+skip-string-normalization = true
+
 [build-system]
 requires = [ "setuptools >= 67.0", "wheel" ]
 build-backend = "setuptools.build_meta"
