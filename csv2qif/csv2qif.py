@@ -17,11 +17,12 @@ AMOUNT_FIELD = 'amount'
 REQUIRED_FIELDS = [DATE_FIELD, PAYEE_FIELD, AMOUNT_FIELD]
 
 
-def get_data(input, date_idx):
+def get_data(input, date_idx, strip_headers):
     with get_inputhandle(input) as csvfile:
         try:
             reader = csv.reader(csvfile)
-            next(reader, None)  # skip the headers
+            if strip_headers:
+                next(reader, None)  # skip the headers
             sorter = lambda row: datetime.strptime(
                 row[date_idx], QIF_DATE_FORMAT
             ).date()
@@ -101,11 +102,14 @@ def convert(args):
         args.output_format,
         loads(args.col_spec),
         args.backup_input,
+        args.strip_headers,
     )
 
 
-def do_convert(account, type, input, output, format, col_spec, backup_input):
-    data, fromto = get_data(input, col_spec[DATE_FIELD])
+def do_convert(
+    account, type, input, output, format, col_spec, backup_input, strip_headers
+):
+    data, fromto = get_data(input, col_spec[DATE_FIELD], strip_headers)
     if len(data) > 0:
         output_handle = get_outputhandle(account, output, format, fromto)
 
@@ -204,7 +208,14 @@ def main():
         '-b',
         '--backup-input',
         help='Save a copy of input CSV alongside the QIF file, with same filename.',
-        type=lambda x: bool(strtobool(x)),
+        action='store_true',
+    )
+    parser.add_argument(
+        '-h',
+        '--strip-headers',
+        help='Assume first row of input has headers, and remove it.',
+        action='store_false',
+        default=True,
     )
 
     args = parser.parse_args()
