@@ -5,15 +5,14 @@
 ```
 CSV to QIF
 
-usage: csv2qif [-h] [--verbose] [-v] -a ACCOUNT -t ACCOUNT_TYPE 
-               [-i INPUT_FILE] [-o OUTPUT_DIR] [-f OUTPUT_FORMAT] [-c COL_SPEC] [-b BACKUP_INPUT]
+usage: csv2qif -a ACCOUNT -t ACCOUNT_TYPE 
+               [-i INPUT_FILE] [-o OUTPUT_DIR] [-f OUTPUT_FORMAT] [-c COL_SPEC] 
+               [-b] [-s]
+               [--help] [--verbose] [--version]
 
 Convert financial transactions in CSV format to QIF files.
 
 options:
-  -h, --help            show this help message and exit
-  --verbose
-  -v, --version         show program's version number and exit
   -a ACCOUNT, --account ACCOUNT
                         The full hierarchical name of the account in GnuCash.
                         (default: None)
@@ -32,9 +31,13 @@ options:
   -c COL_SPEC, --col-spec COL_SPEC
                         Specify column of required fields (date, name, amount, check_number)
                         (default: {"date": 1, "name": 2, "amount": 3, "check_number": 6})
-  -b BACKUP_INPUT, --backup-input BACKUP_INPUT
-                        Save a copy of input CSV alongside the QIF file, with same filename.
-                        (default: None)
+  -b, --backup-input    Save a copy of input CSV alongside the QIF file, with same filename.
+                        (default: False)
+  -s, --strip-headers   Assume first row of input has headers, and remove it. 
+                        (default: True)
+  --verbose             Debug-level logging
+  -v, --version         Show program's version number and exit
+  -h, --help            Show this help message and exit
 
 MIT License: ©2023 Edward Q. Bridges
 ```
