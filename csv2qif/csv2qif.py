@@ -211,7 +211,7 @@ def main():
         action='store_true',
     )
     parser.add_argument(
-        '-h',
+        '-s',
         '--strip-headers',
         help='Assume first row of input has headers, and remove it.',
         action='store_false',
