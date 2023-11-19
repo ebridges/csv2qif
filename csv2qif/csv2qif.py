@@ -1,5 +1,6 @@
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 import csv
+from os import makedirs
 from json import loads
 from datetime import datetime
 from logging import debug, info, warn, INFO, DEBUG, basicConfig
@@ -67,6 +68,8 @@ def get_inputhandle(input):
 def get_outputhandle(account_name, output_dir, output_format, fromto):
     if output_dir in ['-', 'stdout']:
         return stdout
+
+    makedirs(output_dir, exist_ok=True)
 
     filename = output_filename(account_name, fromto, output_format)
     output_file = '%s/%s' % (output_dir, filename)
